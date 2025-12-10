@@ -9,4 +9,4 @@
 
 /models/*.h5
 /models/*.ckpt
-
+/models/labels.json
