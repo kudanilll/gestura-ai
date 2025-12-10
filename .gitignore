@@ -1,4 +1,5 @@
 .venv
 
 # DATASET
-/data
+/data/images/
+/data/labels/
