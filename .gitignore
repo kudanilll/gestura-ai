@@ -3,3 +3,6 @@
 # DATASET
 /data/images/
 /data/labels/
+
+# CACHE
+/gestura_ai/__pycache__/
