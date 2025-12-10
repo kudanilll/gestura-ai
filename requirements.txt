@@ -1,0 +1,14 @@
+# Core deep learning framework
+tensorflow
+
+# Computer vision utilities (webcam, image capture)
+opencv-python
+
+# Numerical computing (used explicitly in webcam_test, also TF dependency)
+numpy
+
+# Visualization for experiments / debugging (optional but useful)
+matplotlib
+
+# Metrics / evaluation utilities (confusion matrix, etc.)
+scikit-learn
