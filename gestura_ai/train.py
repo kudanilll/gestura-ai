@@ -54,7 +54,8 @@ def main():
     model = build_gestura_model(num_classes)
 
     # 3. Callbacks (checkpointing + early stopping + LR scheduling)
-    checkpoint_path = MODELS_DIR / "gestura_bisindo_best.h5"
+    # Use the new Keras v3 .keras format instead of legacy .h5
+    checkpoint_path = MODELS_DIR / "gestura_bisindo_best.keras"
 
     callbacks = [
         tf.keras.callbacks.ModelCheckpoint(
@@ -78,16 +79,16 @@ def main():
     ]
 
     # 4. Training
-    history = model.fit(  # noqa: F841  (history kept for future analysis if needed)
+    history = model.fit(  # noqa: F841
         train_ds,
         validation_data=val_ds,
         epochs=20,
         callbacks=callbacks,
     )
 
-    # 5. Save final (last-epoch) model and labels
-    last_model_path = MODELS_DIR / "gestura_bisindo_last.h5"
-    model.save(last_model_path)
+    # 5. Save final (last-epoch) model and labels in .keras format
+    last_model_path = MODELS_DIR / "gestura_bisindo_last.keras"
+    model.save(last_model_path)  # default is the new .keras zip format
     print(f"[Gestura] Saved last model to: {last_model_path}")
 
     labels_path = MODELS_DIR / "labels.json"

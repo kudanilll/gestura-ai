@@ -1,29 +1,36 @@
-# gestura_ai/export_tflite.py
 from pathlib import Path
 import tensorflow as tf
 
 ROOT_DIR = Path(__file__).resolve().parents[1]
 MODELS_DIR = ROOT_DIR / "models"
 
+def pick_model_path() -> Path:
+    """
+    Choose which model file to convert to TFLite, preferring the .keras format.
+    """
+    candidates = [
+        MODELS_DIR / "gestura_bisindo_best.keras",
+        MODELS_DIR / "gestura_bisindo_last.keras",
+        MODELS_DIR / "gestura_bisindo_best.h5",
+        MODELS_DIR / "gestura_bisindo_last.h5",
+    ]
+
+    for path in candidates:
+        if path.exists():
+            return path
+
+    raise FileNotFoundError(
+        "No model file found in models/ directory.\n"
+        "Run training first: python -m gestura_ai.train"
+    )
+
 def convert_to_tflite():
     """
-    Convert the best or last Keras model (.h5) into a TFLite model.
+    Convert the chosen Keras model into a TFLite model.
 
     Output: models/gestura_bisindo_v1.tflite
     """
-    best_model_path = MODELS_DIR / "gestura_bisindo_best.h5"
-    last_model_path = MODELS_DIR / "gestura_bisindo_last.h5"
-
-    if best_model_path.exists():
-        model_path = best_model_path
-    elif last_model_path.exists():
-        model_path = last_model_path
-    else:
-        raise FileNotFoundError(
-            f"No .h5 model found in {MODELS_DIR}. "
-            "Run training first (python -m gestura_ai.train)."
-        )
-
+    model_path = pick_model_path()
     print(f"[Gestura] Loading model from: {model_path}")
     model = tf.keras.models.load_model(model_path)
 

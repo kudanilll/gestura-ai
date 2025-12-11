@@ -1,3 +1,4 @@
+# gestura_ai/webcam_test.py
 from pathlib import Path
 import json
 import time
@@ -6,27 +7,38 @@ import cv2
 import numpy as np
 import tensorflow as tf
 
-# Reuse the same root and models directory
 ROOT_DIR = Path(__file__).resolve().parents[1]
 MODELS_DIR = ROOT_DIR / "models"
 
+def pick_model_path() -> Path:
+    """
+    Choose which model file to load, preferring the new .keras format.
+    """
+    candidates = [
+        MODELS_DIR / "gestura_bisindo_best.keras",
+        MODELS_DIR / "gestura_bisindo_last.keras",
+        MODELS_DIR / "gestura_bisindo_best.h5",
+        MODELS_DIR / "gestura_bisindo_last.h5",
+    ]
+
+    for path in candidates:
+        if path.exists():
+            return path
+
+    raise FileNotFoundError(
+        "No model file found in models/ directory.\n"
+        "Expected one of:\n"
+        "  - gestura_bisindo_best.keras\n"
+        "  - gestura_bisindo_last.keras\n"
+        "  (or legacy .h5 files)\n"
+        "Run training first: python -m gestura_ai.train"
+    )
+
 def load_model_and_labels():
     """
-    Load the trained Keras model (.h5) and the label list from labels.json.
+    Load the trained model (prefer .keras) and the label list from labels.json.
     """
-    best_model_path = MODELS_DIR / "gestura_bisindo_best.h5"
-    last_model_path = MODELS_DIR / "gestura_bisindo_last.h5"
-
-    if best_model_path.exists():
-        model_path = best_model_path
-    elif last_model_path.exists():
-        model_path = last_model_path
-    else:
-        raise FileNotFoundError(
-            f"No .h5 model found in {MODELS_DIR}. "
-            "Train the model first."
-        )
-
+    model_path = pick_model_path()
     print(f"[Gestura] Loading model from: {model_path}")
     model = tf.keras.models.load_model(model_path)
 
@@ -60,12 +72,11 @@ def preprocess_frame(frame_bgr):
     img_batch = tf.keras.applications.mobilenet_v2.preprocess_input(img_batch)
     return img_batch
 
+
 def main():
     model, class_names = load_model_and_labels()
 
-    # Open default webcam (index 0). Change if you have multiple cameras.
     cap = cv2.VideoCapture(0)
-
     if not cap.isOpened():
         raise RuntimeError("Could not open webcam (index 0).")
 
@@ -81,7 +92,6 @@ def main():
                 print("[Gestura] Failed to read frame from webcam.")
                 break
 
-            # Run prediction every N milliseconds to avoid overloading CPU/GPU
             now = time.time()
             if now - last_pred_time > 0.2:  # ~5 FPS for inference
                 input_tensor = preprocess_frame(frame)
@@ -94,7 +104,6 @@ def main():
                 last_pred = (label, confidence)
                 last_pred_time = now
 
-            # Draw prediction on the original frame
             if last_pred is not None:
                 label, confidence = last_pred
                 text = f"{label} ({confidence:.2f})"
@@ -111,7 +120,6 @@ def main():
 
             cv2.imshow("Gestura - Webcam Test", frame)
 
-            # Quit on 'q'
             if cv2.waitKey(1) & 0xFF == ord("q"):
                 break
 
