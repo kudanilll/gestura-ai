@@ -1,4 +1,3 @@
-# gestura_ai/webcam_test.py
 from pathlib import Path
 import json
 import time
